@@ -85,6 +85,7 @@ void SafetyPinProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     setLatencySamples (juce::roundToInt (oversampling.getLatencyInSamples()));
 
     reverb.prepare (sr);
+    tuner.prepare (sr);
 
     const auto upRate = sr * (double) oversampling.getOversamplingFactor();
     drive.reset (upRate, 0.03);
@@ -175,14 +176,21 @@ void SafetyPinProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
     reverb.setDecay (decay->load());
     updateFilters();
 
-    // ---- mono in, cleaned up, octave and sub mixed in
+    // ---- mono in: the tuner hears it untouched
     auto* m = mono.getWritePointer (0);
     for (int i = 0; i < numSamples; ++i)
     {
         auto x = 0.0f;
         for (int ch = 0; ch < numIn; ++ch)
             x += buffer.getSample (ch, i);
-        x = rumble.processSample (x / (float) numIn);
+        m[i] = x / (float) numIn;
+    }
+    tuner.push (m, numSamples);
+
+    // ---- cleaned up, octave and sub mixed in
+    for (int i = 0; i < numSamples; ++i)
+    {
+        auto x = rumble.processSample (m[i]);
         const auto sub = subBass (x);
         const auto oct = octave.process (x);
         const auto c = cello.getNextValue() * juce::MathConstants<float>::halfPi;
@@ -227,6 +235,8 @@ void SafetyPinProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
             buffer.setSample (1, i, r);
         }
     }
+    if (tuner.mute)
+        buffer.clear();
 }
 
 juce::AudioProcessorEditor* SafetyPinProcessor::createEditor()

@@ -59,8 +59,28 @@ int main (int argc, char* argv[])
     const juce::File outDir (argc > 1 ? juce::String (argv[1]) : juce::File::getCurrentWorkingDirectory().getFullPathName());
     outDir.createDirectory();
 
+    // tuner: feed it each violin note and see what it hears
+    {
+        Tuner t;
+        t.prepare (rate);
+        const auto notes = violin (8.0);
+        for (int k = 0; k < 4; ++k)
+        {
+            t.update();                                   // drain
+            t.push (notes.getReadPointer (0, (int) ((k * 2 + 1.0) * rate)), 4096);
+            const auto r = t.update();
+            std::cout << "tuner note " << k << ": " << (r.valid ? juce::String (r.hz, 2) + " Hz" : juce::String ("none")) << "\n";
+        }
+    }
+
     {
         SafetyPinProcessor p;
+        // a slightly sharp A in the tuner, so the snapshot shows the needle
+        p.tuner.prepare (rate);
+        std::vector<float> a (4096);
+        for (size_t i = 0; i < a.size(); ++i)
+            a[i] = 0.3f * (float) std::sin (2.0 * juce::MathConstants<double>::pi * 443.0 * (double) i / rate);
+        p.tuner.push (a.data(), (int) a.size());
         std::unique_ptr<juce::AudioProcessorEditor> editor (p.createEditor());
         const auto image = editor->createComponentSnapshot (editor->getLocalBounds(), true, 1.0f);
         const auto file = outDir.getChildFile ("gui.png");

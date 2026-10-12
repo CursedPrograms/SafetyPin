@@ -13,7 +13,9 @@ set(SAFETY_PIN_SOURCES
     Source/PluginEditor.cpp
     Source/PunkLook.cpp
     Source/PlateReverb.cpp
-    Source/OctaveDown.cpp)
+    Source/OctaveDown.cpp
+    Source/Tuner.cpp
+    Source/TunerDisplay.cpp)
 
 set(SAFETY_PIN_DEFINITIONS
     JUCE_WEB_BROWSER=0

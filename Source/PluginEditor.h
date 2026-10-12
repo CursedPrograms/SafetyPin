@@ -1,6 +1,7 @@
 #pragma once
 #include "PluginProcessor.h"
 #include "PunkLook.h"
+#include "TunerDisplay.h"
 
 class SafetyPinEditor : public juce::AudioProcessorEditor
 {
@@ -17,6 +18,7 @@ private:
     PunkLook look;
     juce::Slider knobs[numKnobs];
     juce::ToggleButton noFuture { "NO FUTURE" };
+    TunerDisplay tunerDisplay;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> knobAttachments[numKnobs];
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> noFutureAttachment;
     juce::Image grain;

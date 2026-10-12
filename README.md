@@ -15,6 +15,9 @@ Electric violin wrecker: octave down (cello), sub bass, fat distortion, plate re
 | LOUD | output level |
 | NO FUTURE | +12 dB and hard clipping |
 
+**Tuner:** standard violin tuning (G D A E, A = 440 Hz), listening to the clean input before any
+effect. Shows note, cents and the nearest string; click it to mute the output while tuning.
+
 ANGER at 0 and CELLO up gives a clean cello. CELLO and GUTS follow one note at a time; double stops confuse them.
 
 ## Build

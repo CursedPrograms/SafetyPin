@@ -3,6 +3,7 @@
 #include <juce_dsp/juce_dsp.h>
 #include "OctaveDown.h"
 #include "PlateReverb.h"
+#include "Tuner.h"
 
 // Electric violin wrecker: octave down (cello), sub bass, fat distortion, plate reverb.
 // Mono in, stereo out.
@@ -32,6 +33,7 @@ public:
     void setStateInformation (const void*, int) override;
 
     juce::AudioProcessorValueTreeState params;
+    Tuner tuner;                             // listens to the clean input
 
 private:
     static juce::AudioProcessorValueTreeState::ParameterLayout createLayout();

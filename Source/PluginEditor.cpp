@@ -22,12 +22,12 @@ const KnobInfo knobInfo[SafetyPinEditor::numKnobs] = {
     { "loud", "LOUD", punk::red },
 };
 
-constexpr int editorWidth = 880, editorHeight = 450;
+constexpr int editorWidth = 880, editorHeight = 500;
 constexpr int knobTop = 168, knobSize = 100, knobGap = 104, knobLeft = 26;
 }
 
 SafetyPinEditor::SafetyPinEditor (SafetyPinProcessor& p)
-    : AudioProcessorEditor (p)
+    : AudioProcessorEditor (p), tunerDisplay (p.tuner)
 {
     setLookAndFeel (&look);
     for (int i = 0; i < numKnobs; ++i)
@@ -42,6 +42,7 @@ SafetyPinEditor::SafetyPinEditor (SafetyPinProcessor& p)
         knobAttachments[i] = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (p.params, knobInfo[i].id, k);
     }
     addAndMakeVisible (noFuture);
+    addAndMakeVisible (tunerDisplay);
     noFutureAttachment = std::make_unique<AudioProcessorValueTreeState::ButtonAttachment> (p.params, "nofuture", noFuture);
 
     grain = punk::grain (editorWidth, editorHeight);
@@ -57,14 +58,15 @@ void SafetyPinEditor::resized()
 {
     for (int i = 0; i < numKnobs; ++i)
         knobs[i].setBounds (knobLeft + i * knobGap, knobTop, knobSize, knobSize);
-    noFuture.setBounds (editorWidth - 270, editorHeight - 92, 240, 72);
+    tunerDisplay.setBounds (130, 352, 480, 136);
+    noFuture.setBounds (editorWidth - 262, 384, 240, 72);
 }
 
 void SafetyPinEditor::paint (Graphics& g)
 {
     g.fillAll (punk::yellow);
     g.drawImageAt (grain, 0, 0);
-    punk::anarchy (g, { 70.0f, (float) editorHeight - 62.0f }, 34.0f, punk::black.withAlpha (0.8f));
+    punk::anarchy (g, { 66.0f, 420.0f }, 34.0f, punk::black.withAlpha (0.8f));
 
     // title: ransom letters on a torn pink strip, pinned on
     {
@@ -94,9 +96,4 @@ void SafetyPinEditor::paint (Graphics& g)
         const auto b = knobs[i].getBounds().toFloat();
         punk::tapeLabel (g, { b.getX() + 2.0f, b.getBottom() + 6.0f, b.getWidth() - 4.0f, 26.0f }, knobInfo[i].label, 100 + i);
     }
-
-    g.setColour (punk::black);
-    g.setFont (punk::font ("Ink Free", 20.0f, true));
-    g.drawText ("electric violin wrecker", Rectangle<float> (130.0f, (float) editorHeight - 92.0f, 470.0f, 30.0f), Justification::centredLeft);
-    g.drawText ("no gods, no masters, no aliasing", Rectangle<float> (130.0f, (float) editorHeight - 62.0f, 470.0f, 30.0f), Justification::centredLeft);
 }
