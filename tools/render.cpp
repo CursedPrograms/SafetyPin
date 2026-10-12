@@ -92,11 +92,11 @@ int main (int argc, char* argv[])
     const auto input = violin (8.0);
     writeWav (outDir.getChildFile ("in_violin.wav"), input);
 
-    struct Setting { const char* name; float anger, cello, guts, nofuture; };
+    struct Setting { const char* name; float anger, cello, guts, overkill; };
     const Setting settings[] = {
         { "clean_cello", 0.0f, 1.0f, 0.0f, 0.0f },
         { "default", 0.6f, 0.5f, 0.25f, 0.0f },
-        { "no_future", 1.0f, 0.7f, 0.6f, 1.0f },
+        { "overkill", 1.0f, 0.7f, 0.6f, 1.0f },
     };
     for (const auto& s : settings)
     {
@@ -104,7 +104,7 @@ int main (int argc, char* argv[])
         set (p, "anger", s.anger);
         set (p, "cello", s.cello);
         set (p, "guts", s.guts);
-        set (p, "nofuture", s.nofuture);
+        set (p, "overkill", s.overkill);
         p.setPlayConfigDetails (1, 2, rate, blockSize);
         p.prepareToPlay (rate, blockSize);
 

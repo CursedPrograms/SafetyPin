@@ -17,10 +17,10 @@ public:
 private:
     PunkLook look;
     juce::Slider knobs[numKnobs];
-    juce::ToggleButton noFuture { "NO FUTURE" };
+    juce::ToggleButton overkill { "OVERKILL" };
     TunerDisplay tunerDisplay;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> knobAttachments[numKnobs];
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> noFutureAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> overkillAttachment;
     juce::Image grain;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SafetyPinEditor)

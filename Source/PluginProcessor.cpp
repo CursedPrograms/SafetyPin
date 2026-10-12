@@ -26,7 +26,7 @@ SafetyPinProcessor::SafetyPinProcessor()
     basement = params.getRawParameterValue ("basement");
     decay = params.getRawParameterValue ("decay");
     loud = params.getRawParameterValue ("loud");
-    noFuture = params.getRawParameterValue ("nofuture");
+    overkill = params.getRawParameterValue ("overkill");
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout SafetyPinProcessor::createLayout()
@@ -42,7 +42,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout SafetyPinProcessor::createLa
     layout.add (std::make_unique<P> (juce::ParameterID { "decay", 1 }, "Decay (reverb length)", juce::NormalisableRange<float> (0, 1), 0.55f, zeroToTen()));
     layout.add (std::make_unique<P> (juce::ParameterID { "loud", 1 }, "Loud (output)", juce::NormalisableRange<float> (-30, 12, 0.1f), -6.0f,
                                      juce::AudioParameterFloatAttributes().withLabel ("dB")));
-    layout.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { "nofuture", 1 }, "No Future", false));
+    layout.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { "overkill", 1 }, "Overkill", false));
     return layout;
 }
 
@@ -96,7 +96,7 @@ void SafetyPinProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     outGain.reset (sr, 0.05);
     drive.setCurrentAndTargetValue (1.0f);
     outGain.setCurrentAndTargetValue (1.0f);
-    filth.setCurrentAndTargetValue (noFuture->load() > 0.5f ? 1.0f : 0.0f);
+    filth.setCurrentAndTargetValue (overkill->load() > 0.5f ? 1.0f : 0.0f);
     guts.setCurrentAndTargetValue (gutsParam->load());
     cello.setCurrentAndTargetValue (celloParam->load());
     wet.setCurrentAndTargetValue (basement->load());
@@ -166,9 +166,9 @@ void SafetyPinProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
         mono.setSize (1, numSamples, false, false, true);      // host sent a bigger block than promised
 
     const auto a = anger->load();
-    const auto nf = noFuture->load() > 0.5f;
-    drive.setTargetValue (juce::Decibels::decibelsToGain (a * 36.0f + (nf ? 12.0f : 0.0f)));
-    filth.setTargetValue (nf ? 1.0f : 0.0f);
+    const auto ok = overkill->load() > 0.5f;
+    drive.setTargetValue (juce::Decibels::decibelsToGain (a * 36.0f + (ok ? 12.0f : 0.0f)));
+    filth.setTargetValue (ok ? 1.0f : 0.0f);
     guts.setTargetValue (gutsParam->load());
     cello.setTargetValue (celloParam->load());
     wet.setTargetValue (basement->load());

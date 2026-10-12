@@ -41,9 +41,9 @@ SafetyPinEditor::SafetyPinEditor (SafetyPinProcessor& p)
         addAndMakeVisible (k);
         knobAttachments[i] = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (p.params, knobInfo[i].id, k);
     }
-    addAndMakeVisible (noFuture);
+    addAndMakeVisible (overkill);
     addAndMakeVisible (tunerDisplay);
-    noFutureAttachment = std::make_unique<AudioProcessorValueTreeState::ButtonAttachment> (p.params, "nofuture", noFuture);
+    overkillAttachment = std::make_unique<AudioProcessorValueTreeState::ButtonAttachment> (p.params, "overkill", overkill);
 
     grain = punk::grain (editorWidth, editorHeight);
     setSize (editorWidth, editorHeight);
@@ -59,7 +59,7 @@ void SafetyPinEditor::resized()
     for (int i = 0; i < numKnobs; ++i)
         knobs[i].setBounds (knobLeft + i * knobGap, knobTop, knobSize, knobSize);
     tunerDisplay.setBounds (130, 352, 480, 136);
-    noFuture.setBounds (editorWidth - 262, 358, 240, 72);
+    overkill.setBounds (editorWidth - 262, 358, 240, 72);
 }
 
 void SafetyPinEditor::paint (Graphics& g)

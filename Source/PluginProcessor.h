@@ -70,7 +70,7 @@ private:
     std::atomic<float>* basement = nullptr;
     std::atomic<float>* decay = nullptr;
     std::atomic<float>* loud = nullptr;
-    std::atomic<float>* noFuture = nullptr;
+    std::atomic<float>* overkill = nullptr;
 
     double sr = 48000.0;
 

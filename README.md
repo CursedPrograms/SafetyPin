@@ -38,7 +38,7 @@ Made by Farica Kimora. &copy; Cursed Entertainment
 | BASEMENT | reverb mix |
 | DECAY | reverb length |
 | LOUD | output level |
-| NO FUTURE | +12 dB and hard clipping |
+| OVERKILL | +12 dB and hard clipping |
 
 **Tuner:** standard violin tuning (G D A E, A = 440 Hz), listening to the clean input before any
 effect. Shows the note, cents and the nearest string; click it to mute the output while tuning.
