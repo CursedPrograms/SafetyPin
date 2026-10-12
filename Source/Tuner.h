@@ -18,7 +18,6 @@ public:
     void push (const float* samples, int numSamples);    // audio thread
     Reading update();                                     // GUI thread
 
-    std::atomic<bool> mute { false };                     // silence the output while tuning
 
 private:
     float detect (double sr);

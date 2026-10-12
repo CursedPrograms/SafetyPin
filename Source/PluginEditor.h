@@ -40,20 +40,23 @@ public:
     void resized() override;
 
     static constexpr int numKnobs = 8;
-    static constexpr int overkillIndex = numKnobs;       // its MIDI learn slot
+    static constexpr int overkillIndex = numKnobs;       // MIDI learn slots of the switches
+    static constexpr int bypassIndex = numKnobs + 1;
+    static constexpr int muteIndex = numKnobs + 2;
 
 private:
     void timerCallback() override;
     void showLearnMenu (int parameter);
     juce::String learnSnapshot() const;
+    juce::Button& switchFor (int slot);
 
     SafetyPinProcessor& pin;
     PunkLook look;
     LearnSlider knobs[numKnobs];
-    LearnButton overkill { "OVERKILL" };
+    LearnButton overkill { "OVERKILL" }, bypass { "BYPASS" }, mute { "MUTE" };
     TunerDisplay tunerDisplay;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> knobAttachments[numKnobs];
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> overkillAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> overkillAttachment, bypassAttachment, muteAttachment;
     juce::Image grain;
     juce::String shownLearnState;
 

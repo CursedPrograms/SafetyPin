@@ -1,4 +1,8 @@
 #include "PluginEditor.h"
+#if JucePlugin_Build_Standalone
+ #include <juce_audio_utils/juce_audio_utils.h>
+ #include <juce_audio_plugin_client/Standalone/juce_StandaloneFilterWindow.h>
+#endif
 
 using namespace juce;
 
@@ -22,12 +26,12 @@ const KnobInfo knobInfo[SafetyPinEditor::numKnobs] = {
     { "loud", "LOUD", punk::red },
 };
 
-constexpr int editorWidth = 880, editorHeight = 500;
+constexpr int editorWidth = 880, editorHeight = 560;
 constexpr int knobTop = 168, knobSize = 100, knobGap = 104, knobLeft = 26;
 }
 
 SafetyPinEditor::SafetyPinEditor (SafetyPinProcessor& p)
-    : AudioProcessorEditor (p), pin (p), tunerDisplay (p.tuner)
+    : AudioProcessorEditor (p), pin (p), tunerDisplay (p.tuner, *p.params.getParameter ("mute"))
 {
     setLookAndFeel (&look);
     for (int i = 0; i < numKnobs; ++i)
@@ -43,7 +47,21 @@ SafetyPinEditor::SafetyPinEditor (SafetyPinProcessor& p)
         k.onRightClick = [this, i] { showLearnMenu (i); };
     }
     overkill.onRightClick = [this] { showLearnMenu (overkillIndex); };
+    bypass.onRightClick = [this] { showLearnMenu (bypassIndex); };
+    mute.onRightClick = [this] { showLearnMenu (muteIndex); };
     addAndMakeVisible (overkill);
+    addAndMakeVisible (bypass);
+    addAndMakeVisible (mute);
+    bypassAttachment = std::make_unique<AudioProcessorValueTreeState::ButtonAttachment> (p.params, "bypass", bypass);
+    muteAttachment = std::make_unique<AudioProcessorValueTreeState::ButtonAttachment> (p.params, "mute", mute);
+
+   #if JucePlugin_Build_Standalone
+    // The standalone app starts with the input muted "to avoid a feedback loop" and a bar across
+    // the top; this is an instrument effect, so open with the input live (MUTE is right here).
+    if (p.wrapperType == AudioProcessor::wrapperType_Standalone)
+        if (auto* holder = StandalonePluginHolder::getInstance())
+            holder->getMuteInputValue().setValue (false);
+   #endif
     addAndMakeVisible (tunerDisplay);
     overkillAttachment = std::make_unique<AudioProcessorValueTreeState::ButtonAttachment> (p.params, "overkill", overkill);
 
@@ -64,7 +82,7 @@ SafetyPinEditor::~SafetyPinEditor()
 juce::String SafetyPinEditor::learnSnapshot() const
 {
     auto snapshot = String (pin.midiLearn.learning());
-    for (int i = 0; i <= overkillIndex; ++i)
+    for (int i = 0; i <= muteIndex; ++i)
         snapshot << "," << pin.midiLearn.ccFor (i);
     return snapshot;
 }
@@ -91,8 +109,13 @@ void SafetyPinEditor::showLearnMenu (int parameter)
         menu.addItem ("MIDI learn: turn a controller knob next", [&learn, parameter] { learn.startLearning (parameter); });
     if (cc >= 0)
         menu.addItem ("Forget MIDI (CC " + String (cc) + ")", [&learn, parameter] { learn.forget (parameter); });
-    menu.showMenuAsync (PopupMenu::Options().withTargetComponent (parameter == overkillIndex ? static_cast<Component*> (&overkill)
+    menu.showMenuAsync (PopupMenu::Options().withTargetComponent (parameter >= overkillIndex ? static_cast<Component*> (&switchFor (parameter))
                                                                                               : static_cast<Component*> (&knobs[parameter])));
+}
+
+Button& SafetyPinEditor::switchFor (int slot)
+{
+    return slot == bypassIndex ? static_cast<Button&> (bypass) : slot == muteIndex ? static_cast<Button&> (mute) : static_cast<Button&> (overkill);
 }
 
 void SafetyPinEditor::resized()
@@ -101,6 +124,8 @@ void SafetyPinEditor::resized()
         knobs[i].setBounds (knobLeft + i * knobGap, knobTop, knobSize, knobSize);
     tunerDisplay.setBounds (130, 352, 480, 136);
     overkill.setBounds (editorWidth - 262, 358, 240, 72);
+    bypass.setBounds (editorWidth - 262, 494, 118, 54);
+    mute.setBounds (editorWidth - 140, 494, 118, 54);
 }
 
 void SafetyPinEditor::paint (Graphics& g)
@@ -143,12 +168,13 @@ void SafetyPinEditor::paint (Graphics& g)
         const auto learning = pin.midiLearn.learning();
         const auto blink = (Time::getMillisecondCounter() / 300) % 2 == 0;
         g.setFont (punk::font ("Ink Free", 16.0f, true));
-        for (int i = 0; i <= overkillIndex; ++i)
+        for (int i = 0; i <= muteIndex; ++i)
         {
             const auto isKnob = i < numKnobs;
-            const auto b = (isKnob ? knobs[i].getBounds() : overkill.getBounds()).toFloat();
+            const auto b = (isKnob ? knobs[i].getBounds() : switchFor (i).getBounds()).toFloat();
             const auto note = isKnob ? Rectangle<float> (b.getX() - 6.0f, b.getBottom() + 34.0f, b.getWidth() + 12.0f, 18.0f)
-                                     : Rectangle<float> (b.getX(), b.getY() - 20.0f, b.getWidth(), 18.0f);
+                            : i == overkillIndex ? Rectangle<float> (b.getX(), b.getY() - 20.0f, b.getWidth(), 18.0f)
+                                                 : Rectangle<float> (b.getX(), b.getBottom() - 8.0f, b.getWidth(), 16.0f);
             if (i == learning)
             {
                 if (blink)
@@ -184,7 +210,7 @@ void SafetyPinEditor::paint (Graphics& g)
         g.fillPath (paperPath);
         g.setColour (punk::black);
         g.setFont (punk::font ("Courier New", 13.0f, true));
-        g.drawText ("made by Farica Kimora", scrap.withTrimmedBottom (22.0f).withTrimmedTop (4.0f), Justification::centred);
+        g.drawText (String (CharPointer_UTF8 ("Farica\xe2\x98\x86Kimora")), scrap.withTrimmedBottom (22.0f).withTrimmedTop (4.0f), Justification::centred);
         g.drawText (String::fromUTF8 ("© Cursed Entertainment"), scrap.withTrimmedTop (22.0f).withTrimmedBottom (4.0f), Justification::centred);
     }
 }

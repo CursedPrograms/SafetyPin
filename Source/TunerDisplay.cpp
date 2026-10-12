@@ -11,8 +11,8 @@ const float stringHz[] = { 196.00f, 293.66f, 440.00f, 659.26f };   // A = 440
 constexpr float inTune = 3.0f;                                     // cents
 }
 
-TunerDisplay::TunerDisplay (Tuner& t)
-    : tuner (t)
+TunerDisplay::TunerDisplay (Tuner& t, RangedAudioParameter& m)
+    : tuner (t), mute (m)
 {
     setMouseCursor (MouseCursor::PointingHandCursor);
     refresh();
@@ -53,7 +53,9 @@ void TunerDisplay::refresh()
 
 void TunerDisplay::mouseDown (const MouseEvent&)
 {
-    tuner.mute = ! tuner.mute.load();
+    mute.beginChangeGesture();
+    mute.setValueNotifyingHost (mute.getValue() > 0.5f ? 0.0f : 1.0f);
+    mute.endChangeGesture();
     repaint();
 }
 
@@ -144,7 +146,7 @@ void TunerDisplay::paint (Graphics& g)
     if (hasNote)
         g.drawText (String (hz, 1) + " Hz  " + (cents >= 0.0f ? "+" : "") + String (roundToInt (cents)) + "c",
                     info.withHeight (16.0f), Justification::centredLeft);
-    if (tuner.mute)
+    if (mute.getValue() > 0.5f)
     {
         g.setColour (punk::red);
         g.setFont (punk::font ("Impact", 18.0f));

@@ -31,7 +31,7 @@ and the tuner is set to the violin's range (about 150 Hz and up).
   <img src="images/safety_pin.png" alt="Safety Pin: punk zine style plugin window" width="760"/>
 </div>
 
-Made by Farica Kimora. &copy; Cursed Entertainment
+[Farica☆Kimora](https://github.com/Farica-Kimora) © Cursed Entertainment
 
 ## Controls
 
@@ -46,11 +46,13 @@ Made by Farica Kimora. &copy; Cursed Entertainment
 | DECAY | reverb length |
 | LOUD | output level |
 | OVERKILL | +12 dB and hard clipping |
+| BYPASS | true bypass: your clean signal, lined up with the effect (also your DAW's bypass) |
+| MUTE | silence, for tuning or between songs (the same as clicking the tuner) |
 
 **Tuner:** standard violin tuning (G D A E, A = 440 Hz), listening to the clean input before any
 effect. Shows the note, cents and the nearest string; click it to mute the output while tuning.
 
-**MIDI learn:** right-click any knob (or OVERKILL) > *MIDI learn*, then turn a knob on your
+**MIDI learn:** right-click any knob (or OVERKILL, BYPASS, MUTE) > *MIDI learn*, then turn a knob on your
 controller - it's linked, and the CC number shows under the knob. Right-click again to forget it.
 The links are saved with your project (or, in the standalone app, when you close it). For the
 standalone app, tick your controller under Options > Audio/MIDI Settings > Active MIDI inputs.
@@ -73,8 +75,8 @@ in the `dist` folder. By hand:
 
 ## Standalone with an audio interface
 Options > Audio/MIDI Settings: driver type ASIO, device e.g. Focusrite USB ASIO, input = the one the
-violin is plugged into, buffer 64-128 samples. Then click "Unmute Input" (JUCE mutes inputs on
-first start to avoid feedback; use headphones or an amp, not a mic near the speakers).
+violin is plugged into, buffer 64-128 samples. The input is live from the start (no "muted to avoid
+feedback" bar); use headphones or an amp, not a mic near the speakers. MUTE silences the output.
 
 ## Offline test
 `SafetyPinRender <dir>` (target `SafetyPinRender`) checks the tuner, renders the window to `gui.png`

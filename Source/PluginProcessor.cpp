@@ -17,7 +17,7 @@ SafetyPinProcessor::SafetyPinProcessor()
                           .withInput ("Input", juce::AudioChannelSet::mono(), true)
                           .withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
       params (*this, nullptr, "SafetyPin", createLayout()),
-      midiLearn (params, { "anger", "cello", "guts", "bottom", "snarl", "basement", "decay", "loud", "overkill" })
+      midiLearn (params, { "anger", "cello", "guts", "bottom", "snarl", "basement", "decay", "loud", "overkill", "bypass", "mute" })
 {
     anger = params.getRawParameterValue ("anger");
     celloParam = params.getRawParameterValue ("cello");
@@ -28,6 +28,13 @@ SafetyPinProcessor::SafetyPinProcessor()
     decay = params.getRawParameterValue ("decay");
     loud = params.getRawParameterValue ("loud");
     overkill = params.getRawParameterValue ("overkill");
+    bypass = params.getRawParameterValue ("bypass");
+    mute = params.getRawParameterValue ("mute");
+}
+
+juce::AudioProcessorParameter* SafetyPinProcessor::getBypassParameter() const
+{
+    return params.getParameter ("bypass");
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout SafetyPinProcessor::createLayout()
@@ -44,6 +51,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout SafetyPinProcessor::createLa
     layout.add (std::make_unique<P> (juce::ParameterID { "loud", 1 }, "Loud (output)", juce::NormalisableRange<float> (-30, 12, 0.1f), -6.0f,
                                      juce::AudioParameterFloatAttributes().withLabel ("dB")));
     layout.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { "overkill", 1 }, "Overkill", false));
+    layout.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { "bypass", 1 }, "Bypass", false));
+    layout.add (std::make_unique<juce::AudioParameterBool> (juce::ParameterID { "mute", 1 }, "Mute", false));
     return layout;
 }
 
@@ -84,6 +93,9 @@ void SafetyPinProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     oversampling.reset();
     oversampling.initProcessing ((size_t) samplesPerBlock);
     setLatencySamples (juce::roundToInt (oversampling.getLatencyInSamples()));
+    dry.assign ((size_t) samplesPerBlock, 0.0f);
+    dryDelay.assign ((size_t) getLatencySamples() + 1, 0.0f);
+    dryPos = 0;
 
     reverb.prepare (sr);
     tuner.prepare (sr);
@@ -101,6 +113,10 @@ void SafetyPinProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
     guts.setCurrentAndTargetValue (gutsParam->load());
     cello.setCurrentAndTargetValue (celloParam->load());
     wet.setCurrentAndTargetValue (basement->load());
+    effectMix.reset (sr, 0.02);
+    effectMix.setCurrentAndTargetValue (bypass->load() > 0.5f ? 0.0f : 1.0f);
+    level.reset (sr, 0.02);
+    level.setCurrentAndTargetValue (mute->load() > 0.5f ? 0.0f : 1.0f);
 }
 
 void SafetyPinProcessor::updateFilters()
@@ -166,6 +182,8 @@ void SafetyPinProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
         return;
     if (mono.getNumSamples() < numSamples)
         mono.setSize (1, numSamples, false, false, true);      // host sent a bigger block than promised
+    if (dry.size() < (size_t) numSamples)
+        dry.resize ((size_t) numSamples);
 
     const auto a = anger->load();
     const auto ok = overkill->load() > 0.5f;
@@ -176,6 +194,8 @@ void SafetyPinProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
     wet.setTargetValue (basement->load());
     outGain.setTargetValue (juce::Decibels::decibelsToGain (loud->load() - a * 12.0f));
     reverb.setDecay (decay->load());
+    effectMix.setTargetValue (bypass->load() > 0.5f ? 0.0f : 1.0f);
+    level.setTargetValue (mute->load() > 0.5f ? 0.0f : 1.0f);
     updateFilters();
 
     // ---- mono in: the tuner hears it untouched
@@ -186,6 +206,9 @@ void SafetyPinProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
         for (int ch = 0; ch < numIn; ++ch)
             x += buffer.getSample (ch, i);
         m[i] = x / (float) numIn;
+        dryDelay[dryPos] = m[i];                              // for BYPASS: delayed like the effect
+        dryPos = (dryPos + 1) % dryDelay.size();
+        dry[(size_t) i] = dryDelay[dryPos];
     }
     tuner.push (m, numSamples);
 
@@ -224,9 +247,11 @@ void SafetyPinProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
         float wl, wr;
         reverb.process (x, wl, wr);
         const auto w = wet.getNextValue();
-        const auto dry = x * (1.0f - 0.4f * w);
+        const auto direct = x * (1.0f - 0.4f * w);
         const auto g = outGain.getNextValue();
-        const auto l = (dry + w * wl) * g, r = (dry + w * wr) * g;
+        const auto mix = effectMix.getNextValue(), lvl = level.getNextValue();
+        const auto clean = (1.0f - mix) * dry[(size_t) i];
+        const auto l = ((direct + w * wl) * g * mix + clean) * lvl, r = ((direct + w * wr) * g * mix + clean) * lvl;
         if (numOut == 1)
         {
             buffer.setSample (0, i, 0.5f * (l + r));
@@ -237,8 +262,6 @@ void SafetyPinProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
             buffer.setSample (1, i, r);
         }
     }
-    if (tuner.mute)
-        buffer.clear();
 }
 
 juce::AudioProcessorEditor* SafetyPinProcessor::createEditor()

@@ -124,6 +124,49 @@ int main (int argc, char* argv[])
         std::cout << (failures == 0 ? "midi learn: all passed\n" : "midi learn: FAILURES\n");
     }
 
+    // bypass gives the clean input back (lined up with the effect), mute gives silence, and the
+    // tuner's click and the MUTE switch are the same parameter
+    {
+        int failures = 0;
+        const auto check = [&failures] (bool ok, const char* what)
+        {
+            std::cout << (ok ? "  ok   " : "  FAIL ") << what << '\n';
+            failures += ok ? 0 : 1;
+        };
+        const auto in = violin (2.0);
+        const auto run = [&in] (SafetyPinProcessor& p)
+        {
+            p.setPlayConfigDetails (1, 2, rate, blockSize);
+            p.prepareToPlay (rate, blockSize);
+            juce::AudioBuffer<float> out (2, in.getNumSamples()), block (2, blockSize);
+            juce::MidiBuffer midi;
+            for (int pos = 0; pos + blockSize <= in.getNumSamples(); pos += blockSize)
+            {
+                block.clear();
+                block.copyFrom (0, 0, in, 0, pos, blockSize);
+                p.processBlock (block, midi);
+                out.copyFrom (0, pos, block, 0, 0, blockSize);
+                out.copyFrom (1, pos, block, 1, 0, blockSize);
+            }
+            return out;
+        };
+        std::cout << "bypass and mute:\n";
+        SafetyPinProcessor b;
+        set (b, "bypass", 1.0f);
+        const auto bypassed = run (b);
+        const auto latency = b.getLatencySamples();
+        float worst = 0.0f;
+        for (int i = latency; i < in.getNumSamples() - blockSize; ++i)
+            worst = std::max (worst, std::abs (bypassed.getSample (1, i) - in.getSample (0, i - latency)));
+        check (worst < 1e-6f, "bypass gives back the clean input, lined up with the effect");
+        check (b.getBypassParameter() == b.params.getParameter ("bypass"), "the host's bypass is the same switch");
+        SafetyPinProcessor m;
+        set (m, "mute", 1.0f);
+        const auto muted = run (m);
+        check (muted.getMagnitude (0, muted.getNumSamples()) == 0.0f, "mute is silent");
+        std::cout << (failures == 0 ? "bypass and mute: all passed\n" : "bypass and mute: FAILURES\n");
+    }
+
     // tuner: feed it each violin note and see what it hears
     {
         Tuner t;

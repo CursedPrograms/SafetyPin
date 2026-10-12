@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(SafetyPin VERSION 0.2.0)
+project(SafetyPin VERSION 0.3.0)
 
 # Build the C++ runtime into the exe / VST3, so they run on PCs without the Visual C++ Redistributable
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")

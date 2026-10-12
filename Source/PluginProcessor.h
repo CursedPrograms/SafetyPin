@@ -30,6 +30,7 @@ public:
     void setCurrentProgram (int) override                   {}
     const juce::String getProgramName (int) override        { return {}; }
     void changeProgramName (int, const juce::String&) override {}
+    juce::AudioProcessorParameter* getBypassParameter() const override;
     void getStateInformation (juce::MemoryBlock&) override;
     void setStateInformation (const void*, int) override;
 
@@ -59,10 +60,12 @@ private:
 
     juce::dsp::Oversampling<float> oversampling { 1, 2, juce::dsp::Oversampling<float>::filterHalfBandPolyphaseIIR, true, true };
     juce::AudioBuffer<float> mono;
+    std::vector<float> dry, dryDelay;                 // the clean signal, lined up with the effect
+    size_t dryPos = 0;
     PlateReverb reverb;
 
     juce::SmoothedValue<float, juce::ValueSmoothingTypes::Multiplicative> drive, outGain;
-    juce::SmoothedValue<float> filth, guts, wet, cello;
+    juce::SmoothedValue<float> filth, guts, wet, cello, effectMix, level;     // effectMix: bypass crossfade; level: mute
 
     std::atomic<float>* anger = nullptr;
     std::atomic<float>* celloParam = nullptr;
@@ -73,6 +76,8 @@ private:
     std::atomic<float>* decay = nullptr;
     std::atomic<float>* loud = nullptr;
     std::atomic<float>* overkill = nullptr;
+    std::atomic<float>* bypass = nullptr;
+    std::atomic<float>* mute = nullptr;
 
     double sr = 48000.0;
 
