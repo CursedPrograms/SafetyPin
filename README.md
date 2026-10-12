@@ -15,10 +15,15 @@
 ---
 
 # Safety Pin
-### Electric violin wrecker
+### Electric violin distortion
 
-Octave down (cello), sub bass, fat distortion, plate reverb and a violin tuner.
-64-bit **VST3** and **standalone app** (ASIO, e.g. a Focusrite Scarlett). Mono in, stereo out.
+**Safety Pin is a distortion made for electric violin**: a fat, bassy fuzz that tames bow scratch
+and fizz, with an octave-down voice that turns the violin into a cello, a sub bass two octaves
+down, a plate reverb and a built-in violin tuner.
+64-bit **VST3** and **standalone app** for Windows (ASIO, e.g. a Focusrite Scarlett). Mono in, stereo out.
+
+It works on other instruments too (guitar, viola, voice), but the pitch tracking for CELLO, GUTS
+and the tuner is set to the violin's range (about 150 Hz and up).
 
 <div align="center">
   <img src="images/safety_pin.png" alt="Safety Pin: punk zine style plugin window" width="760"/>

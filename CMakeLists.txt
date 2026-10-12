@@ -29,6 +29,7 @@ juce_add_plugin(SafetyPin
     PLUGIN_CODE SfPn
     FORMATS VST3 Standalone
     PRODUCT_NAME "Safety Pin"
+    DESCRIPTION "Electric violin distortion: octave down (cello), sub bass, plate reverb, violin tuner"
     IS_SYNTH FALSE
     NEEDS_MIDI_INPUT FALSE
     NEEDS_MIDI_OUTPUT FALSE
