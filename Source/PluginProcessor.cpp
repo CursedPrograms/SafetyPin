@@ -16,7 +16,8 @@ SafetyPinProcessor::SafetyPinProcessor()
     : AudioProcessor (BusesProperties()
                           .withInput ("Input", juce::AudioChannelSet::mono(), true)
                           .withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
-      params (*this, nullptr, "SafetyPin", createLayout())
+      params (*this, nullptr, "SafetyPin", createLayout()),
+      midiLearn (params, { "anger", "cello", "guts", "bottom", "snarl", "basement", "decay", "loud", "overkill" })
 {
     anger = params.getRawParameterValue ("anger");
     celloParam = params.getRawParameterValue ("cello");
@@ -155,8 +156,9 @@ float SafetyPinProcessor::subBass (float x)
     return subSmooth2.processSample (subSmooth1.processSample (square));
 }
 
-void SafetyPinProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer&)
+void SafetyPinProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midi)
 {
+    midiLearn.process (midi);
     juce::ScopedNoDenormals noDenormals;
     const auto numSamples = buffer.getNumSamples();
     const auto numIn = getTotalNumInputChannels(), numOut = getTotalNumOutputChannels();
@@ -254,7 +256,10 @@ void SafetyPinProcessor::setStateInformation (const void* data, int size)
 {
     if (auto xml = getXmlFromBinary (data, size))
         if (xml->hasTagName (params.state.getType()))
+        {
             params.replaceState (juce::ValueTree::fromXml (*xml));
+            midiLearn.loadFromState();
+        }
 }
 
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()

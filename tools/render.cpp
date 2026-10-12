@@ -5,6 +5,8 @@
 #include <juce_audio_formats/juce_audio_formats.h>
 #include <iostream>
 
+constexpr int SafetyPinEditorOverkill = 8;     // MIDI learn slot of the OVERKILL switch
+
 namespace
 {
 constexpr double rate = 48000.0;
@@ -59,6 +61,69 @@ int main (int argc, char* argv[])
     const juce::File outDir (argc > 1 ? juce::String (argv[1]) : juce::File::getCurrentWorkingDirectory().getFullPathName());
     outDir.createDirectory();
 
+    // MIDI learn: learn, play, the switch, forget, and survive a save + reload
+    {
+        const auto pump = [] { juce::MessageManager::getInstance()->runDispatchLoopUntil (120); };
+        const auto send = [] (SafetyPinProcessor& p, int cc, int value)
+        {
+            juce::AudioBuffer<float> audio (2, 64);
+            audio.clear();
+            juce::MidiBuffer midi;
+            midi.addEvent (juce::MidiMessage::controllerEvent (1, cc, value), 0);
+            p.processBlock (audio, midi);
+        };
+        const auto value = [] (SafetyPinProcessor& p, const char* id) { return p.params.getParameter (id)->getValue(); };
+        int failures = 0;
+        const auto check = [&failures] (bool ok, const char* what)
+        {
+            std::cout << (ok ? "  ok   " : "  FAIL ") << what << '\n';
+            failures += ok ? 0 : 1;
+        };
+
+        SafetyPinProcessor p;
+        p.setPlayConfigDetails (1, 2, rate, 64);
+        p.prepareToPlay (rate, 64);
+        std::cout << "midi learn:\n";
+        send (p, 21, 100); pump();
+        check (p.midiLearn.ccFor (0) < 0 && std::abs (value (p, "anger") - 0.6f) < 1e-6f, "unlearned CC does nothing");
+        p.midiLearn.startLearning (0);
+        send (p, 21, 100); pump();
+        check (p.midiLearn.ccFor (0) == 21 && p.midiLearn.learning() < 0, "ANGER learned CC 21");
+        check (std::abs (value (p, "anger") - 100.0f / 127.0f) < 1e-4f, "CC 21 = 100 moves ANGER to 100/127");
+        send (p, 21, 0); pump();
+        check (value (p, "anger") < 1e-6f, "CC 21 = 0 turns ANGER down");
+        p.midiLearn.startLearning (SafetyPinEditorOverkill);
+        send (p, 64, 127); pump();
+        check (p.midiLearn.ccFor (SafetyPinEditorOverkill) == 64 && value (p, "overkill") > 0.5f, "OVERKILL learned CC 64, pedal down = on");
+        send (p, 64, 0); pump();
+        check (value (p, "overkill") < 0.5f, "pedal up = off");
+        p.midiLearn.startLearning (7);
+        send (p, 22, 64); pump();
+        p.midiLearn.startLearning (7);
+        send (p, 23, 30); pump();
+        check (p.midiLearn.ccFor (7) == 23, "relearning LOUD moves it to the new CC");
+        send (p, 22, 127); pump();
+        const auto* loudParam = p.params.getParameter ("loud");                 // snaps to 0.1 dB steps
+        const auto snapped = loudParam->convertTo0to1 (loudParam->convertFrom0to1 (30.0f / 127.0f));
+        check (std::abs (value (p, "loud") - snapped) < 1e-5f, "old CC 22 no longer moves LOUD");
+
+        juce::MemoryBlock state;
+        p.getStateInformation (state);
+        SafetyPinProcessor reloaded;
+        reloaded.setStateInformation (state.getData(), (int) state.getSize());
+        check (reloaded.midiLearn.ccFor (0) == 21 && reloaded.midiLearn.ccFor (SafetyPinEditorOverkill) == 64
+                   && reloaded.midiLearn.ccFor (7) == 23, "links survive save + reload");
+        reloaded.midiLearn.forget (0);
+        pump();
+        check (reloaded.midiLearn.ccFor (0) < 0, "forget removes the link");
+        juce::MemoryBlock state2;
+        reloaded.getStateInformation (state2);
+        SafetyPinProcessor reloaded2;
+        reloaded2.setStateInformation (state2.getData(), (int) state2.getSize());
+        check (reloaded2.midiLearn.ccFor (0) < 0 && reloaded2.midiLearn.ccFor (7) == 23, "forgetting is saved too");
+        std::cout << (failures == 0 ? "midi learn: all passed\n" : "midi learn: FAILURES\n");
+    }
+
     // tuner: feed it each violin note and see what it hears
     {
         Tuner t;
@@ -81,6 +146,19 @@ int main (int argc, char* argv[])
         for (size_t i = 0; i < a.size(); ++i)
             a[i] = 0.3f * (float) std::sin (2.0 * juce::MathConstants<double>::pi * 443.0 * (double) i / rate);
         p.tuner.push (a.data(), (int) a.size());
+        p.setPlayConfigDetails (1, 2, rate, 64);
+        p.prepareToPlay (rate, 64);
+        p.midiLearn.startLearning (0);
+        juce::MidiBuffer midi;
+        midi.addEvent (juce::MidiMessage::controllerEvent (1, 21, 76), 0);
+        juce::AudioBuffer<float> silence (2, 64);
+        silence.clear();
+        p.processBlock (silence, midi);
+        p.midiLearn.startLearning (SafetyPinEditorOverkill);
+        midi.clear();
+        midi.addEvent (juce::MidiMessage::controllerEvent (1, 64, 0), 0);
+        p.processBlock (silence, midi);
+        p.midiLearn.startLearning (5);                 // BASEMENT left learning: blinking ring
         std::unique_ptr<juce::AudioProcessorEditor> editor (p.createEditor());
         const auto image = editor->createComponentSnapshot (editor->getLocalBounds(), true, 1.0f);
         const auto file = outDir.getChildFile ("gui.png");

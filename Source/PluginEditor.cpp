@@ -27,7 +27,7 @@ constexpr int knobTop = 168, knobSize = 100, knobGap = 104, knobLeft = 26;
 }
 
 SafetyPinEditor::SafetyPinEditor (SafetyPinProcessor& p)
-    : AudioProcessorEditor (p), tunerDisplay (p.tuner)
+    : AudioProcessorEditor (p), pin (p), tunerDisplay (p.tuner)
 {
     setLookAndFeel (&look);
     for (int i = 0; i < numKnobs; ++i)
@@ -40,18 +40,59 @@ SafetyPinEditor::SafetyPinEditor (SafetyPinProcessor& p)
         k.setColour (Slider::rotarySliderFillColourId, knobInfo[i].colour);
         addAndMakeVisible (k);
         knobAttachments[i] = std::make_unique<AudioProcessorValueTreeState::SliderAttachment> (p.params, knobInfo[i].id, k);
+        k.onRightClick = [this, i] { showLearnMenu (i); };
     }
+    overkill.onRightClick = [this] { showLearnMenu (overkillIndex); };
     addAndMakeVisible (overkill);
     addAndMakeVisible (tunerDisplay);
     overkillAttachment = std::make_unique<AudioProcessorValueTreeState::ButtonAttachment> (p.params, "overkill", overkill);
 
     grain = punk::grain (editorWidth, editorHeight);
     setSize (editorWidth, editorHeight);
+    shownLearnState = learnSnapshot();
+    startTimerHz (15);
 }
 
 SafetyPinEditor::~SafetyPinEditor()
 {
+    pin.midiLearn.cancelLearning();
     setLookAndFeel (nullptr);
+}
+
+// ---------------------------------------------------------------- MIDI learn
+
+juce::String SafetyPinEditor::learnSnapshot() const
+{
+    auto snapshot = String (pin.midiLearn.learning());
+    for (int i = 0; i <= overkillIndex; ++i)
+        snapshot << "," << pin.midiLearn.ccFor (i);
+    return snapshot;
+}
+
+void SafetyPinEditor::timerCallback()
+{
+    const auto now = learnSnapshot();
+    if (now != shownLearnState || pin.midiLearn.learning() >= 0)
+    {
+        shownLearnState = now;
+        repaint();                            // also makes the "learning" ring blink
+    }
+}
+
+void SafetyPinEditor::showLearnMenu (int parameter)
+{
+    auto& learn = pin.midiLearn;
+    const auto cc = learn.ccFor (parameter);
+    PopupMenu menu;
+    menu.setLookAndFeel (&look);
+    if (learn.learning() == parameter)
+        menu.addItem ("Cancel MIDI learn", [&learn] { learn.cancelLearning(); });
+    else
+        menu.addItem ("MIDI learn: turn a controller knob next", [&learn, parameter] { learn.startLearning (parameter); });
+    if (cc >= 0)
+        menu.addItem ("Forget MIDI (CC " + String (cc) + ")", [&learn, parameter] { learn.forget (parameter); });
+    menu.showMenuAsync (PopupMenu::Options().withTargetComponent (parameter == overkillIndex ? static_cast<Component*> (&overkill)
+                                                                                              : static_cast<Component*> (&knobs[parameter])));
 }
 
 void SafetyPinEditor::resized()
@@ -95,6 +136,41 @@ void SafetyPinEditor::paint (Graphics& g)
     {
         const auto b = knobs[i].getBounds().toFloat();
         punk::tapeLabel (g, { b.getX() + 2.0f, b.getBottom() + 6.0f, b.getWidth() - 4.0f, 26.0f }, knobInfo[i].label, 100 + i);
+    }
+
+    // MIDI learn: which controller knob drives what, and a blinking ring while learning
+    {
+        const auto learning = pin.midiLearn.learning();
+        const auto blink = (Time::getMillisecondCounter() / 300) % 2 == 0;
+        g.setFont (punk::font ("Ink Free", 16.0f, true));
+        for (int i = 0; i <= overkillIndex; ++i)
+        {
+            const auto isKnob = i < numKnobs;
+            const auto b = (isKnob ? knobs[i].getBounds() : overkill.getBounds()).toFloat();
+            const auto note = isKnob ? Rectangle<float> (b.getX() - 6.0f, b.getBottom() + 34.0f, b.getWidth() + 12.0f, 18.0f)
+                                     : Rectangle<float> (b.getX(), b.getY() - 20.0f, b.getWidth(), 18.0f);
+            if (i == learning)
+            {
+                if (blink)
+                {
+                    g.setColour (punk::pink);
+                    if (isKnob)
+                        g.drawEllipse (b.reduced (2.0f), 4.0f);
+                    else
+                        g.drawRect (b.reduced (4.0f), 4.0f);
+                }
+                g.setColour (punk::black);
+                g.drawText ("turn a knob...", note, Justification::centred);
+            }
+            else if (const auto cc = pin.midiLearn.ccFor (i); cc >= 0)
+            {
+                g.setColour (punk::black);
+                g.drawText ("CC " + String (cc), note, Justification::centred);
+            }
+        }
+        g.setColour (punk::black.withAlpha (0.75f));
+        g.setFont (punk::font ("Ink Free", 15.0f, true));
+        g.drawText ("right-click a knob = MIDI learn", Rectangle<float> (130.0f, 326.0f, 300.0f, 18.0f), Justification::centredLeft);
     }
 
     // credits, typed on a scrap of paper

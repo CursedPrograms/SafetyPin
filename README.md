@@ -50,6 +50,12 @@ Made by Farica Kimora. &copy; Cursed Entertainment
 **Tuner:** standard violin tuning (G D A E, A = 440 Hz), listening to the clean input before any
 effect. Shows the note, cents and the nearest string; click it to mute the output while tuning.
 
+**MIDI learn:** right-click any knob (or OVERKILL) > *MIDI learn*, then turn a knob on your
+controller - it's linked, and the CC number shows under the knob. Right-click again to forget it.
+The links are saved with your project (or, in the standalone app, when you close it). For the
+standalone app, tick your controller under Options > Audio/MIDI Settings > Active MIDI inputs.
+In Cubase you can also use Quick Controls / MIDI Remote; every knob is automatable.
+
 ANGER at 0 and CELLO up gives a clean cello. CELLO and GUTS follow one note at a time; double stops confuse them.
 
 ## Build (Windows)

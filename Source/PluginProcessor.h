@@ -4,6 +4,7 @@
 #include "OctaveDown.h"
 #include "PlateReverb.h"
 #include "Tuner.h"
+#include "MidiLearn.h"
 
 // Electric violin wrecker: octave down (cello), sub bass, fat distortion, plate reverb.
 // Mono in, stereo out.
@@ -21,7 +22,7 @@ public:
     juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override                         { return true; }
     const juce::String getName() const override             { return "Safety Pin"; }
-    bool acceptsMidi() const override                       { return false; }
+    bool acceptsMidi() const override                       { return true; }   // MIDI learn
     bool producesMidi() const override                      { return false; }
     double getTailLengthSeconds() const override            { return 8.0; }
     int getNumPrograms() override                           { return 1; }
@@ -34,6 +35,7 @@ public:
 
     juce::AudioProcessorValueTreeState params;
     Tuner tuner;                             // listens to the clean input
+    MidiLearn midiLearn;                     // controller knobs -> parameters
 
 private:
     static juce::AudioProcessorValueTreeState::ParameterLayout createLayout();
