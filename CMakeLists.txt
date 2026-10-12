@@ -24,8 +24,8 @@ set(SAFETY_PIN_DEFINITIONS
     JUCE_VST3_CAN_REPLACE_VST2=0)
 
 juce_add_plugin(SafetyPin
-    COMPANY_NAME "DIY or DIE"
-    PLUGIN_MANUFACTURER_CODE Diyd
+    COMPANY_NAME "Cursed Entertainment"
+    PLUGIN_MANUFACTURER_CODE Crsd
     PLUGIN_CODE SfPn
     FORMATS VST3 Standalone
     PRODUCT_NAME "Safety Pin"

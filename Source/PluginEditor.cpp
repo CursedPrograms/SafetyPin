@@ -59,7 +59,7 @@ void SafetyPinEditor::resized()
     for (int i = 0; i < numKnobs; ++i)
         knobs[i].setBounds (knobLeft + i * knobGap, knobTop, knobSize, knobSize);
     tunerDisplay.setBounds (130, 352, 480, 136);
-    noFuture.setBounds (editorWidth - 262, 384, 240, 72);
+    noFuture.setBounds (editorWidth - 262, 358, 240, 72);
 }
 
 void SafetyPinEditor::paint (Graphics& g)
@@ -95,5 +95,20 @@ void SafetyPinEditor::paint (Graphics& g)
     {
         const auto b = knobs[i].getBounds().toFloat();
         punk::tapeLabel (g, { b.getX() + 2.0f, b.getBottom() + 6.0f, b.getWidth() - 4.0f, 26.0f }, knobInfo[i].label, 100 + i);
+    }
+
+    // credits, typed on a scrap of paper
+    {
+        Random rnd (2026);
+        const auto scrap = Rectangle<float> ((float) editorWidth - 262.0f, 440.0f, 240.0f, 48.0f);
+        const auto paperPath = punk::torn (scrap, rnd, 3.0f);
+        g.setColour (punk::black.withAlpha (0.3f));
+        g.fillPath (paperPath, AffineTransform::translation (3.0f, 3.0f));
+        g.setColour (punk::paper);
+        g.fillPath (paperPath);
+        g.setColour (punk::black);
+        g.setFont (punk::font ("Courier New", 13.0f, true));
+        g.drawText ("made by Farica Kimora", scrap.withTrimmedBottom (22.0f).withTrimmedTop (4.0f), Justification::centred);
+        g.drawText (String::fromUTF8 ("© Cursed Entertainment"), scrap.withTrimmedTop (22.0f).withTrimmedBottom (4.0f), Justification::centred);
     }
 }
