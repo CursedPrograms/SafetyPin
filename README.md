@@ -17,6 +17,8 @@
 # Safety Pin
 ### Electric violin distortion
 
+**Website:** https://cursedprograms.github.io/SafetyPin/ &middot; **Download:** [latest release](https://github.com/CursedPrograms/SafetyPin/releases/latest)
+
 **Safety Pin is a distortion made for electric violin**: a fat, bassy fuzz that tames bow scratch
 and fizz, with an octave-down voice that turns the violin into a cello, a sub bass two octaves
 down, a plate reverb and a built-in violin tuner.

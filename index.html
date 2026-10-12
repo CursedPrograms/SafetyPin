@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Safety Pin - electric violin distortion</title>
+<meta name="description" content="Safety Pin: a free distortion made for electric violin. Octave-down cello voice, sub bass, plate reverb and a built-in violin tuner. VST3 and standalone for Windows.">
+<link rel="icon" href="site/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Abril+Fatface&family=Courier+Prime:wght@700&family=Permanent+Marker&family=Rubik+Mono+One&family=Special+Elite&display=swap">
+<link rel="stylesheet" href="site/style.css">
+<script src="site/site.js" defer></script>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="strip torn" data-seed="77">
+    <h1 class="ransom" data-ransom="SAFETY PIN" data-seed="1976" aria-label="Safety Pin">SAFETY PIN</h1>
+  </div>
+  <img class="pin pin-left" src="site/safety-pin.svg" alt="">
+  <img class="pin pin-right" src="site/safety-pin.svg" alt="">
+  <p class="tape subtitle torn" data-seed="5">electric violin distortion</p>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="hero-text">
+      <p class="marker big">A fat, bassy fuzz made for <u>electric violin</u>.</p>
+      <p class="marker">Turn it into a cello. Add a sub two octaves down. Throw it in the basement.
+        Tune up without leaving the plugin.</p>
+      <div class="actions">
+        <a class="stamp" href="https://github.com/CursedPrograms/SafetyPin/releases/download/v0.1.0/SafetyPin-v0.1.0-win64.zip">DOWNLOAD</a>
+        <a class="stamp stamp-ghost" href="https://github.com/CursedPrograms/SafetyPin">SOURCE</a>
+      </div>
+      <p class="typed small">free &middot; Windows 10/11 64-bit &middot; VST3 + standalone app &middot; v0.1.0</p>
+    </div>
+    <figure class="polaroid">
+      <span class="tape tape-corner torn" data-seed="9"></span>
+      <img src="images/safety_pin.png" alt="The Safety Pin plugin window: eight studded knobs, a violin tuner and the OVERKILL switch" width="880" height="500">
+      <figcaption class="marker">the plugin, actual size-ish</figcaption>
+    </figure>
+  </section>
+
+  <section class="knobs-section">
+    <h2 class="section-title"><span class="tape torn" data-seed="21">THE KNOBS</span></h2>
+    <p class="marker hint">go on, turn them (they don't make noise here)</p>
+    <div class="knob-grid">
+      <div class="knob-card" data-colour="pink" data-value="0.6">
+        <div class="knob" role="slider" tabindex="0" aria-label="Anger"></div>
+        <span class="tape label torn" data-seed="100">ANGER</span>
+        <p class="typed">How much distortion.</p>
+      </div>
+      <div class="knob-card" data-colour="paper" data-value="0.5">
+        <div class="knob" role="slider" tabindex="0" aria-label="Cello"></div>
+        <span class="tape label torn" data-seed="101">CELLO</span>
+        <p class="typed">A real octave down. At 10 you only hear the octave: a cello.</p>
+      </div>
+      <div class="knob-card" data-colour="acid" data-value="0.25">
+        <div class="knob" role="slider" tabindex="0" aria-label="Guts"></div>
+        <span class="tape label torn" data-seed="102">GUTS</span>
+        <p class="typed">Synth sub bass, two octaves down.</p>
+      </div>
+      <div class="knob-card" data-colour="orange" data-value="0.5">
+        <div class="knob" role="slider" tabindex="0" aria-label="Bottom"></div>
+        <span class="tape label torn" data-seed="103">BOTTOM</span>
+        <p class="typed">Bass boost after the fuzz, up to +14 dB.</p>
+      </div>
+      <div class="knob-card" data-colour="paper" data-value="0.45">
+        <div class="knob" role="slider" tabindex="0" aria-label="Snarl"></div>
+        <span class="tape label torn" data-seed="104">SNARL</span>
+        <p class="typed">Tone, dark to bright.</p>
+      </div>
+      <div class="knob-card" data-colour="pink" data-value="0.3">
+        <div class="knob" role="slider" tabindex="0" aria-label="Basement"></div>
+        <span class="tape label torn" data-seed="105">BASEMENT</span>
+        <p class="typed">Plate reverb mix.</p>
+      </div>
+      <div class="knob-card" data-colour="acid" data-value="0.55">
+        <div class="knob" role="slider" tabindex="0" aria-label="Decay"></div>
+        <span class="tape label torn" data-seed="106">DECAY</span>
+        <p class="typed">How long the reverb rings.</p>
+      </div>
+      <div class="knob-card" data-colour="red" data-value="0.57">
+        <div class="knob" role="slider" tabindex="0" aria-label="Loud"></div>
+        <span class="tape label torn" data-seed="107">LOUD</span>
+        <p class="typed">Output level.</p>
+      </div>
+    </div>
+
+    <div class="overkill-row">
+      <button class="stamp overkill" type="button" aria-pressed="false">OVERKILL</button>
+      <p class="marker">+12 dB of drive and hard clipping. Press it. You know you want to.</p>
+    </div>
+  </section>
+
+  <section class="tuner-section">
+    <div class="tuner-card torn" data-seed="42" aria-hidden="true">
+      <span class="tape label torn tuner-tape" data-seed="7">TUNER</span>
+      <div class="tuner-note"><span class="note">A</span><span class="octave">4</span></div>
+      <div class="tuner-meter">
+        <span class="flat marker">flat</span><span class="sharp marker">sharp</span>
+        <div class="scale"></div>
+        <div class="centre"></div>
+        <div class="needle"></div>
+      </div>
+      <div class="tuner-strings"><span>G</span><span>D</span><span class="lit">A</span><span>E</span></div>
+    </div>
+    <div class="tuner-text">
+      <h2 class="section-title"><span class="tape torn" data-seed="22">BUILT-IN TUNER</span></h2>
+      <p class="typed">Standard violin tuning: G D A E, A = 440 Hz. It listens to your <b>clean</b> signal,
+        before any fuzz, octave or reverb, so the effects never confuse it.</p>
+      <p class="typed">Note, cents and the nearest string. Goes green when you're in tune.
+        Click it to mute the output while you tune.</p>
+    </div>
+  </section>
+
+  <section class="setup">
+    <h2 class="section-title"><span class="tape torn" data-seed="23">PLUG IN</span></h2>
+    <div class="scraps">
+      <article class="scrap torn" data-seed="31">
+        <h3>Standalone</h3>
+        <ol class="typed">
+          <li>Unzip, run <code>Safety Pin.exe</code>.</li>
+          <li>Options &gt; Audio/MIDI Settings: <b>ASIO</b>, your interface (e.g. Focusrite USB ASIO), the input your violin is in, buffer 64-128.</li>
+          <li>Click <b>Unmute Input</b>. Headphones or an amp, not a mic near the speakers.</li>
+        </ol>
+      </article>
+      <article class="scrap torn" data-seed="32">
+        <h3>VST3</h3>
+        <ol class="typed">
+          <li>Copy <code>Safety Pin.vst3</code> to <code>C:\Program Files\Common Files\VST3</code>.</li>
+          <li>Rescan plugins in your DAW (Cubase, Reaper, Ableton...).</li>
+          <li>Put it on a mono track. It comes out stereo.</li>
+        </ol>
+      </article>
+      <article class="scrap torn" data-seed="33">
+        <h3>"Windows protected your PC"?</h3>
+        <p class="typed">The files aren't code-signed, so SmartScreen may warn you. Click <b>More info &gt; Run anyway</b>.
+          Only download it from this page or the GitHub release.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="guts">
+    <h2 class="section-title"><span class="tape torn" data-seed="24">UNDER THE HOOD</span></h2>
+    <ul class="typed">
+      <li><b>Octave down:</b> two read heads sweep a delay line at half speed; each sweep is a whole number of the note's periods, so the splices land in phase. No warble.</li>
+      <li><b>Sub bass:</b> a flip-flop divider like the old analog octave pedals.</li>
+      <li><b>Fuzz:</b> bow scratch cut and low mids pushed before the clipper, 4x oversampled.</li>
+      <li><b>Reverb:</b> Jon Dattorro's plate, damped darker for strings.</li>
+      <li><b>Tuner:</b> YIN pitch detection.</li>
+    </ul>
+    <p class="marker small">Works on guitar and viola too, but the octave and tuner only track from about 150 Hz up, and one note at a time.</p>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="credits scrap torn" data-seed="2026">
+    <p>made by Farica Kimora</p>
+    <p>&copy; Cursed Entertainment 2026</p>
+  </div>
+  <a class="logo" href="https://cursed-entertainment.itch.io/">
+    <img src="https://github.com/CursedPrograms/cursedentertainment/raw/main/images/logos/logo-wide-grey.png" alt="Cursed Entertainment" width="250">
+  </a>
+  <p class="typed small"><a href="https://github.com/CursedPrograms/SafetyPin">GitHub</a> &middot; MIT licence &middot; built with JUCE</p>
+</footer>
+
+</body>
+</html>
