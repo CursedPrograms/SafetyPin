@@ -54,6 +54,9 @@ ANGER at 0 and CELLO up gives a clean cello. CELLO and GUTS follow one note at a
 Needs Visual Studio 2022 (Desktop development with C++) and CMake 3.22+. JUCE 8.0.12 is downloaded
 into `build/` on the first configure.
 
+Easiest: double-click **`build.bat`**. It builds both and puts `Safety Pin.exe` and `Safety Pin.vst3`
+in the `dist` folder. By hand:
+
     cmake -S . -B build -G "Visual Studio 17 2022" -A x64
     cmake --build build --config Release --parallel --target SafetyPin_VST3 SafetyPin_Standalone
 
@@ -82,3 +85,25 @@ The Safety Pin source code is MIT licensed (see [LICENSE](LICENSE)). It is built
 [JUCE](https://juce.com), which is under its own licence (AGPLv3 or a commercial JUCE licence), and
 the standalone app uses Steinberg's ASIO interface bundled with JUCE. Anyone distributing compiled
 builds must follow those licences too.
+
+---
+
+<br>
+<div align="center">
+© Cursed Entertainment 2026
+</div>
+<br>
+<div align="center">
+<a href="https://cursed-entertainment.itch.io/" target="_blank">
+    <img src="https://github.com/CursedPrograms/cursedentertainment/raw/main/images/logos/logo-wide-grey.png"
+        alt="CursedEntertainment Logo" style="width:250px;">
+</a>
+</div>
+<br>
+<div align="center">
+  <a href="https://github.com/SynthWomb" target="_blank">
+    <img src="https://github.com/SynthWomb/synth.womb/blob/main/logos/synthwomb07.png" alt="SynthWomb" style="width:200px;"/>
+  </a>
+</div>
+
+---
