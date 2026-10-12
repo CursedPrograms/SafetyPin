@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.22)
 project(SafetyPin VERSION 0.1.0)
 
+# Build the C++ runtime into the exe / VST3, so they run on PCs without the Visual C++ Redistributable
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
 include(FetchContent)
 FetchContent_Declare(JUCE
     GIT_REPOSITORY https://github.com/juce-framework/JUCE.git
